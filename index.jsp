@@ -1,8 +1,13 @@
 <!DOCTYPE html>
 <title>Konstrukcijos</title>
 <head>
+<%
+String[] produktai = { "id", "pav", "rusis", "atsp_klase"  };
+String[] reiksmes_produktai = new String [ produktai.length ];
+%>
+
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
-<link rel="stylesheet" href="/resources/demos/style.css">
+
 <style>
  label, input { display:block; }
     input.text { margin-bottom:12px; width:95%; padding: .4em; }
@@ -49,10 +54,11 @@ body {
  
       // From http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#e-mail-state-%28type=email%29
       emailRegex = /^[a-zA-Z0-9.!#$%&'*+\/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/,
-      name = $( "#name" ),
-      email = $( "#email" ),
-      password = $( "#password" ),
-      allFields = $( [] ).add( name ).add( email ).add( password ),
+      id = $( "#id" ),
+      pav = $( "#pav" ),
+      rusis = $( "#rusis" ),
+      atsp_klase = $( "#atsp_klase" ),
+      allFields = $( [] ).add( id ).add( pav ).add( rusis ).add( atsp_klase ),
       tips = $( ".validateTips" );
  
     function updateTips( t ) {
@@ -85,24 +91,22 @@ body {
       }
     }
  
-    function addUser() {
+    function addProduktai() {
       var valid = true;
       allFields.removeClass( "ui-state-error" );
  
-      valid = valid && checkLength( name, "username", 3, 16 );
-      valid = valid && checkLength( email, "email", 6, 80 );
-      valid = valid && checkLength( password, "password", 5, 16 );
+      valid = valid && checkLength( id, "id", 1, 1000 );
+      valid = valid && checkLength( pav, "pav", 1, 1000 );
+      valid = valid && checkLength( rusis, "rusis", 1, 1000 );
+      valid = valid && checkLength( atsp_klase, "atsp_klase", 1, 1000 );
  
-      valid = valid && checkRegexp( name, /^[a-z]([0-9a-z_\s])+$/i, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
-      valid = valid && checkRegexp( email, emailRegex, "eg. ui@jquery.com" );
-      valid = valid && checkRegexp( password, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
+      valid = valid && checkRegexp( id, /^([0-9a-zA-Z])+$/, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
+      valid = valid && checkRegexp( pav, /^[a-z]([0-9a-z_\s])+$/i, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
+      valid = valid && checkRegexp( rusis,  /^[a-z]([0-9a-z_\s])+$/i, "Username may consist of a-z, 0-9, underscores, spaces and must begin with a letter." );
+      valid = valid && checkRegexp( atsp_klase, /^([0-9a-zA-Z])+$/, "Password field only allow : a-z 0-9" );
  
       if ( valid ) {
-        $( "#users tbody" ).append( "<tr>" +
-          "<td>" + name.val() + "</td>" +
-          "<td>" + email.val() + "</td>" +
-          "<td>" + password.val() + "</td>" +
-        "</tr>" );
+        $("#prekes_forma").submit();
         dialog.dialog( "close" );
       }
       return valid;
@@ -114,7 +118,7 @@ body {
       width: 350,
       modal: true,
       buttons: {
-        "Pridėti": addUser,
+        "Pridėti": addProduktai,
         "Atšaukti": function() {
           dialog.dialog( "close" );
         }
@@ -125,21 +129,43 @@ body {
       }
     });
  
-    form = dialog.find( "form" ).on( "submit", function( event ) {
-      event.preventDefault();
-      addUser();
-    });
- 
     $( "#create-user" ).button().on( "click", function() {
       dialog.dialog( "open" );
     });
-  } );
-  </script>
-<script>
-function Redagavimas() {
-  alert("Reik iššokančio lango");
-}
-</script
+
+
+    $('.record_edit').click(function(){
+		  id_rec=$(this).data('id_rec');
+			if (mygtukas = document.getElementById ('toEdit_' + id_rec) ) {
+<%				
+					for ( int i=0; i<produktai.length; i++) {
+%>
+					document.getElementById('<%=produktai [ i ] %>').value= mygtukas.dataset.<%=produktai [ i ] %>;
+<%
+					}
+%>
+            document.getElementById ( "id" ).value = id_rec;
+            dialog.dialog( "open" );
+      }
+    });
+	  
+  });
+
+<%		
+        try {
+            String del;
+            String where_salyga;
+            if ( ( ( del = request.getParameter("del")  ) != null ) && del.equals ( "del1rec" ) ) {
+%>
+                // alert( "opa" );
+<%
+            }
+        }  catch ( Exception e ) {
+            e.printStackTrace();
+    }
+%>	
+
+</script>
 </head>
 <%@page pageEncoding="UTF-8" language="java"%>
 <%@page contentType="text/html;charset=UTF-8"%>
@@ -151,19 +177,20 @@ function Redagavimas() {
 String id = request.getParameter("userid");
 String driver = "com.mysql.jdbc.Driver";
 String connectionUrl = "jdbc:mysql://localhost:3306/";
-String database = "pgkon";
-String userid = "root";
+String dbName = "konstrukcijos";
+String userId = "root";
 String password = "";
-try {
+/*try {
 Class.forName(driver);
 } catch (ClassNotFoundException e) {
 e.printStackTrace();
-}
+}*/
 Connection connection = null;
-Statement statement = null;
+Statement statement_take = null;
+Statement statement_change = null;
 ResultSet resultSet = null;
-String[] produktai = {  "pav", "rusis", "atsp_klase",  };
-String[] reiksmes_produktai = new String [ produktai.length ];
+int resultSetChange;
+
 %>
 <html>
 <body>
@@ -171,7 +198,7 @@ String[] reiksmes_produktai = new String [ produktai.length ];
 <h1 style="color:powderblue;"><b>Konstrukcijos</b></h1>
 <table id="customers" border="1">
 <tr>
-<th>Id</td>
+<th style="text-align: center; vertical-align: middle;">Id</td>
 <th style="text-align: center; vertical-align: middle;">Pavadinimas</th>
 <th style="text-align: center; vertical-align: middle;">Rūšis</th>
 <th style="text-align: center; vertical-align: middle;">Atsparumo klasė</th>
@@ -189,8 +216,7 @@ try {
 
   
 try { 
-
-            
+   
       connection = DriverManager.getConnection ( connectionUrl + dbName + "?useUnicode=yes&characterEncoding=UTF-8", userId, password );
       String add = "";
       
@@ -198,7 +224,7 @@ try {
   
       if ( ( ( add = request.getParameter("add") ) != null ) && add.equals ( "Prideti" ) ) {
 
-          String id_produkto = request.getParameter ("id_produkto");
+          String id_produkto = request.getParameter ("id");
           
 
           if ( (id_produkto==null) || id_produkto.equals ("0") ) {
@@ -210,7 +236,7 @@ try {
               
               String comma = "";
               
-              for ( int i = 0; i < reiksmes_roduktai.length; i++ ) {
+              for ( int i = 0; i < reiksmes_produktai.length; i++ ) {
               
                   sql_ins =  sql_ins + comma  + "'" + reiksmes_produktai [ i ] + "'";
                   comma = ",";																												
@@ -218,7 +244,7 @@ try {
               
               sql_ins = 
               "INSERT INTO `produktai`"
-              + " (`pav`, `rusis`, `atsp_klase` )"
+              + " (`id`, `pav`, `rusis`, `atsp_klase` )"
               + " VALUES ( "			
               + sql_ins
               + " )";
@@ -229,88 +255,75 @@ try {
 
           } else {
 
-              sql_ins = "UPDATE `produktai` SET `pav`='"+request.getParameter("pav")+"',rusis='"+request.getParameter("rusis")+"',atsp_klase='"+request.getParameter("atsp_klase")+"' WHERE `id` ="+id_produkto;
-
-              statement_change = connection.createStatement();
-              resultSetChange = statement_change.executeUpdate(sql_ins);
-          } 
-
-      } else {
-          
-          if ( add != null ) {
-
-              out.println ( add );
+                sql_ins = "UPDATE `produktai` SET `id`='"+request.getParameter("id")+"',pav='"+request.getParameter("pav")+"',rusis='"+request.getParameter("rusis")+"',atsp_klase='"+request.getParameter("atsp_klase")+"' WHERE `id` ="+id_produkto;
+                statement_change = connection.createStatement();
+                resultSetChange = statement_change.executeUpdate(sql_ins);
           }
-      }
-  }
 
-                  statement_take = connection.createStatement();		
+          } else {
+          
+           if ( add != null ) {
+                        out.println ( add );
+                    }
+                } 
+                        
+                statement_take = connection.createStatement();		
                 String sql ="SELECT * FROM `produktai` WHERE1";
                 resultSet = statement_take.executeQuery(sql);
                             
-                     while ( resultSet.next() ){
-
+              while ( resultSet.next() ){
                     String rec_data = "";
 		
                     for ( int i = 0; i < produktai.length; i++ ) { 
-
                         rec_data += " data-"  + produktai [ i ]  + "=\"" + resultSet.getString (  produktai [ i ]  ) + "\"";
-
                     }  
-			        
+			        String id_rec = resultSet.getString (  "id"  );
+                %>
+
+                <tr>
+                    <td><input type="button" class="record_edit" id="toEdit_<%=id_rec %>" data-id_rec="<%=id_rec %>"<%=rec_data %> value="&#9998;"></td> 
+                <%
+                        for ( int i = 0; i < reiksmes_produktai.length; i++ ) {
+                %>
+                    <td><%= resultSet.getString (  produktai [ i ]  ) %></td>
+                <%
+                        }
+                %>
+                </tr>
+                <% 
+                        }
+      
             
- 
-
-try{
-request.setCharacterEncoding("UTF-8");
-response.setContentType("text/html; charset=UTF-8");
-response.setCharacterEncoding("UTF-8");	
-connection = DriverManager.getConnection(connectionUrl+database, userid, password);
-statement=connection.createStatement();
-String sql ="SELECT * FROM `produktai` WHERE 1";
-resultSet = statement.executeQuery(sql);
-
-
-
-while(resultSet.next()){
-%>
-<tr>
-<td><%=resultSet.getString("id") %></td>
-<td><%=resultSet.getString("pav") %></td>
-<td><%=resultSet.getString("rusis") %></td>
-<td><%=resultSet.getString("atsp_klase") %></td>
-<td><input type="button" class="record_edit" value="&#9998;" onClick="Redagavimas()"></td>
-<td><input type="button" class="delete" value="&#10007;" onClick="Trinti()"></td>
-</tr>
-<%
-}
-connection.close();
-} catch (Exception e) {
-e.printStackTrace();
-}
-%>
-</table>
+            } catch ( Exception e ) {
+                    
+                        e.printStackTrace();
+                    }
+                
+%> 
+</table> 
 
 <div id="dialog-form" title="Pridėti norimus produktus">
   <p class="validateTips">Privaloma užpildyti visus laukelius</p>
  
-  <form>
+  <form id="prekes_forma" method="post">
     <fieldset>
-      <label for="name">Tipas</label>
-      <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
+
+   
+      <input type="hidden" name="id" id="id" value="0" class="text ui-widget-content ui-corner-all">
 	  <label for="name">Pavadinimas</label>
-      <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
+      <input type="text" name="pav" id="pav" value="" class="text ui-widget-content ui-corner-all">
 	  <label for="name">Rūšis</label>
-      <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
+      <input type="text" name="rusis" id="rusis" value="" class="text ui-widget-content ui-corner-all">
 	  <label for="name">Atsparumo klasė</label>
-      <input type="text" name="name" id="name" value="" class="text ui-widget-content ui-corner-all">
-	  
- 
-      <!-- Allow form submission with keyboard without duplicating the dialog button -->
+      <input type="text" name="atsp_klase" id="atsp_klase" value="" class="text ui-widget-content ui-corner-all">
+    <input type="hidden" name="add" id="add" value="Prideti">
+
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
     </fieldset>
   </form>
+
+                    
 </div>
-<button id="create-user">Formuoti užsakymą</button>
+    <button id="create-user">Formuoti užsakymą</button>
 </body>
 </html>
