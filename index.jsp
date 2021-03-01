@@ -2,8 +2,18 @@
 <title>Konstrukcijos</title>
 <head>
 <%
+String id = request.getParameter("userid");
+String driver = "com.mysql.jdbc.Driver";
+String connectionUrl = "jdbc:mysql://localhost:3306/";
+String dbName = "konstrukcijos";
+String userId = "root";
+String password = "";
+
 String[] produktai = { "id", "pav", "rusis", "atsp_klase"  };
 String[] reiksmes_produktai = new String [ produktai.length ];
+
+Crud1 produktai_crud = new Crud1 ( dbName, userId, password, connectionUrl, "produktai", produktai );
+//public Crud1 ( String name_database, String user_name, String password, String server, String lentele, String[] lent_laukai );
 %>
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -169,29 +179,8 @@ body {
 </head>
 <%@page pageEncoding="UTF-8" language="java"%>
 <%@page contentType="text/html;charset=UTF-8"%>
-<%@page import="java.sql.DriverManager"%>
-<%@page import="java.sql.ResultSet"%>
-<%@page import="java.sql.Statement"%>
-<%@page import="java.sql.Connection"%>
-<%
-String id = request.getParameter("userid");
-String driver = "com.mysql.jdbc.Driver";
-String connectionUrl = "jdbc:mysql://localhost:3306/";
-String dbName = "konstrukcijos";
-String userId = "root";
-String password = "";
-/*try {
-Class.forName(driver);
-} catch (ClassNotFoundException e) {
-e.printStackTrace();
-}*/
-Connection connection = null;
-Statement statement_take = null;
-Statement statement_change = null;
-ResultSet resultSet = null;
-int resultSetChange;
+<%@page language="java" import="commons.Crud1" %>
 
-%>
 <html>
 <body>
 <center>
@@ -217,7 +206,7 @@ try {
   
 try { 
    
-      connection = DriverManager.getConnection ( connectionUrl + dbName + "?useUnicode=yes&characterEncoding=UTF-8", userId, password );
+      
       String add = "";
       
       String sql_ins = "";
@@ -225,80 +214,27 @@ try {
       if ( ( ( add = request.getParameter("add") ) != null ) && add.equals ( "Prideti" ) ) {
 
           String id_produkto = request.getParameter ("id");
-          
 
+          for ( int i=0; i<produktai.length; i++ ) {
+
+            reiksmes_produktai [ i ] = request.getParameter ( produktai [ i ] );
+          }
+          
           if ( (id_produkto==null) || id_produkto.equals ("0") ) {
 
-              for ( int i=0; i<produktai.length; i++ ) {
-
-                  reiksmes_produktai [ i ] = request.getParameter ( produktai [ i ] );
-              }
-              
-              String comma = "";
-              
-              for ( int i = 0; i < reiksmes_produktai.length; i++ ) {
-              
-                  sql_ins =  sql_ins + comma  + "'" + reiksmes_produktai [ i ] + "'";
-                  comma = ",";																												
-              }
-              
-              sql_ins = 
-              "INSERT INTO `produktai`"
-              + " (`id`, `pav`, `rusis`, `atsp_klase` )"
-              + " VALUES ( "			
-              + sql_ins
-              + " )";
-              out.println (sql_ins);
-
-              statement_change = connection.createStatement();
-              resultSetChange = statement_change.executeUpdate(sql_ins);
+              produktai_crud.papildyti (reiksmes_produktai);
 
           } else {
 
-                sql_ins = "UPDATE `produktai` SET `id`='"+request.getParameter("id")+"',pav='"+request.getParameter("pav")+"',rusis='"+request.getParameter("rusis")+"',atsp_klase='"+request.getParameter("atsp_klase")+"' WHERE `id` ="+id_produkto;
-                statement_change = connection.createStatement();
-                resultSetChange = statement_change.executeUpdate(sql_ins);
+              produktai_crud.update(reiksmes_produktai, id_produkto);
           }
-
-          } else {
-          
-           if ( add != null ) {
-                        out.println ( add );
-                    }
-                } 
-                        
-                statement_take = connection.createStatement();		
-                String sql ="SELECT * FROM `produktai` WHERE1";
-                resultSet = statement_take.executeQuery(sql);
-                            
-              while ( resultSet.next() ){
-                    String rec_data = "";
-		
-                    for ( int i = 0; i < produktai.length; i++ ) { 
-                        rec_data += " data-"  + produktai [ i ]  + "=\"" + resultSet.getString (  produktai [ i ]  ) + "\"";
-                    }  
-			        String id_rec = resultSet.getString (  "id"  );
-                %>
-
-                <tr>
-                    <td><input type="button" class="record_edit" id="toEdit_<%=id_rec %>" data-id_rec="<%=id_rec %>"<%=rec_data %> value="&#9998;"></td> 
-                <%
-                        for ( int i = 0; i < reiksmes_produktai.length; i++ ) {
-                %>
-                    <td><%= resultSet.getString (  produktai [ i ]  ) %></td>
-                <%
-                        }
-                %>
-                </tr>
-                <% 
-                        }
-      
+      }
             
-            } catch ( Exception e ) {
+    } catch ( Exception e ) {
                     
-                        e.printStackTrace();
-                    }
-                
+        e.printStackTrace();
+    }
+      out.println( produktai_crud.lentele() );
 %> 
 </table> 
 

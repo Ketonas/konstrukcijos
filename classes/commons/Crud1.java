@@ -20,6 +20,7 @@
 		private Statement statement_change = null;
 		private ResultSet resultSet = null;
 		private int resultSetChange;
+		private String comma = "";
 	
 
 		public Crud1() {
@@ -79,6 +80,58 @@
 			}
 			return resultSetChange;
 		}
+
+		public Integer update ( String[] lent_lauk_reiksmes, String id_iraso ) {
+			
+			String sql_upd = "";
+			comma = ",";	
+
+			sql_upd += "UPDATE `" + lent + "` SET " ;
+			
+				for ( int i = 0; i < lent_lauk.length; i++ ) {
+				
+				sql_upd += "`" + (  lent_lauk [ i ]  ) +"`";
+				sql_upd += "='" + (  lent_lauk_reiksmes [ i ] ) + "'" + comma; 
+				} 
+				
+				sql_upd = sql_upd.substring(0,sql_upd.length()- 1);
+				
+				sql_upd += " WHERE `" + lent + "`.`id`='"+ id_iraso +"'";
+			
+			System.out.println ( sql_upd );
+			
+			try {
+
+				statement_change = connection.createStatement();
+				resultSetChange = statement_change.executeUpdate(sql_upd);			
+				
+			} catch ( Exception e ) {
+				
+				e.printStackTrace( System.out );
+			}
+			return resultSetChange;
+		}		
+		
+		public Integer delete ( String id_iraso ) {
+			
+			String sql_del = "";
+			
+			sql_del = "DELETE FROM `"+ lent +"` WHERE `"+ lent +"`.`id`='"+ id_iraso +"'";
+
+			System.out.println ( sql_del );
+			
+			
+			try {
+
+				statement_change = connection.createStatement();
+				resultSetChange = statement_change.executeUpdate(sql_del);			
+				
+			} catch ( Exception e ) {
+				
+				e.printStackTrace( System.out );
+			}
+			return resultSetChange;
+		}
 		
 		public String lentele()  {
 			
@@ -91,15 +144,27 @@
 			 
 				while( resultSet.next() ){
 					
+					String rec_data = "";
+
+					for ( int i = 0; i<lent_lauk.length; i++ ) {
+			
+						rec_data += " data-" + lent_lauk [ i ] + "=\"" + resultSet.getString ( lent_lauk [ i ] ) + "\"";
+					}
+						
+					String id_rec = resultSet.getString ( "id" );
+								
+					String pav = resultSet.getString ( "pav" );
 					
 					lent += "<tr>";
-					lent += "<td><input type=\"button\" class=\"record_edit\" data-id_miesto=\"\" value=\"&#9998;\"></td>";
 		
 					for ( int i = 0; i < lent_lauk.length; i++ ) {
 				
 						lent += "<td>" + resultSet.getString (  lent_lauk [ i ]  ) + "</td>";
 
 					}
+					lent += "<td><input type=\"button\" class=\"record_edit\" id=\"toEdit_" + id_rec + "\" data-id_rec=\"" + id_rec + "\"" + rec_data + " value=\"&#9998;\"></td>";
+					lent += "<td><input type=\"button\" class=\"delete\" id=\"toDelete_" + id_rec + "\" data-id_rec=\"" + id_rec + "\" data-pav=\"" + pav + "\"  value=\"&#10006;\" onClick=\"iTrinima( " + id_rec + " )\"></td>";
+
 					lent += "</tr>";
 
 				}
