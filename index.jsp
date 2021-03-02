@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <title>Konstrukcijos</title>
 <head>
+<%@page pageEncoding="UTF-8" language="java"%>
+<%@page contentType="text/html;charset=UTF-8"%>
+<%@page language="java" import="commons.Crud1" %>
 <%
 String id = request.getParameter("userid");
 String driver = "com.mysql.jdbc.Driver";
@@ -13,7 +16,7 @@ String[] produktai = { "id", "pav", "rusis", "atsp_klase"  };
 String[] reiksmes_produktai = new String [ produktai.length ];
 
 Crud1 produktai_crud = new Crud1 ( dbName, userId, password, connectionUrl, "produktai", produktai );
-//public Crud1 ( String name_database, String user_name, String password, String server, String lentele, String[] lent_laukai );
+
 %>
 
 <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -161,25 +164,42 @@ body {
 	  
   });
 
-<%		
-        try {
-            String del;
-            String where_salyga;
-            if ( ( ( del = request.getParameter("del")  ) != null ) && del.equals ( "del1rec" ) ) {
-%>
-                // alert( "opa" );
+	
+
+			  function iValyma () {
 <%
-            }
-        }  catch ( Exception e ) {
-            e.printStackTrace();
-    }
-%>	
+				
+				for ( int i=1; i<produktai.length; i++) {
+%>
+				
+				  document.getElementById('<%=produktai [ i ] %>').value= "";
+<%				
+				}
+%>
+				
+			}
+
+				function iTrinima ( id_rec ) {
+			
+				mygtukasEdit = document.getElementById ( 'toDelete_' + id_rec );
+				
+				pav = mygtukasEdit.dataset.pav;
+				
+				var r = confirm( "Ar norite pašalinti užsakymą?" + pav + "?" );
+				
+				if ( r == true ) {
+					
+					document.getElementById ( "m_del" ).value = id_rec;
+					
+					forma_del = document.getElementById ( "del_rec" );
+
+					forma_del.submit();
+				}
+				
+			}
 
 </script>
 </head>
-<%@page pageEncoding="UTF-8" language="java"%>
-<%@page contentType="text/html;charset=UTF-8"%>
-<%@page language="java" import="commons.Crud1" %>
 
 <html>
 <body>
@@ -222,13 +242,24 @@ try {
           
           if ( (id_produkto==null) || id_produkto.equals ("0") ) {
 
-              produktai_crud.papildyti (reiksmes_produktai);
+            produktai_crud.papildyti (reiksmes_produktai);
 
           } else {
 
-              produktai_crud.update(reiksmes_produktai, id_produkto);
+            produktai_crud.update(reiksmes_produktai, id_produkto);
           }
       }
+
+      String del = "";
+
+		      if ( ( (  del = request.getParameter( "del" ) ) != null) && del.equals ( "del1rec" ) ) {	
+
+            String id_produkto = "0";
+
+            id_produkto = request.getParameter( "id_produkto" );
+
+			    	produktai_crud.delete ( id_produkto );
+			}
             
     } catch ( Exception e ) {
                     
@@ -238,13 +269,18 @@ try {
 %> 
 </table> 
 
+
+  <form id="del_rec" method="post" action="">
+    <input type="hidden" name="del" value="del1rec">
+    <input type="hidden" id="m_del" name="id_produkto" value="0">
+	</form>
+
 <div id="dialog-form" title="Pridėti norimus produktus">
   <p class="validateTips">Privaloma užpildyti visus laukelius</p>
  
   <form id="prekes_forma" method="post">
     <fieldset>
 
-   
       <input type="hidden" name="id" id="id" value="0" class="text ui-widget-content ui-corner-all">
 	  <label for="name">Pavadinimas</label>
       <input type="text" name="pav" id="pav" value="" class="text ui-widget-content ui-corner-all">
@@ -256,9 +292,7 @@ try {
 
       <input type="submit" tabindex="-1" style="position:absolute; top:-1000px">
     </fieldset>
-  </form>
-
-                    
+  </form>           
 </div>
     <button id="create-user">Formuoti užsakymą</button>
 </body>

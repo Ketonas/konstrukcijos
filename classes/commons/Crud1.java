@@ -162,8 +162,9 @@
 						lent += "<td>" + resultSet.getString (  lent_lauk [ i ]  ) + "</td>";
 
 					}
+					
 					lent += "<td><input type=\"button\" class=\"record_edit\" id=\"toEdit_" + id_rec + "\" data-id_rec=\"" + id_rec + "\"" + rec_data + " value=\"&#9998;\"></td>";
-					lent += "<td><input type=\"button\" class=\"delete\" id=\"toDelete_" + id_rec + "\" data-id_rec=\"" + id_rec + "\" data-pav=\"" + pav + "\"  value=\"&#10006;\" onClick=\"iTrinima( " + id_rec + " )\"></td>";
+					lent += "<td><input type=\"button\" class=\"delete\" id=\"toDelete_" + id_rec + "\" data-id_rec=\"" + id_rec + "\" value=\"&#10006;\" onClick=\"iTrinima( " + id_rec + " )\"></td>";
 
 					lent += "</tr>";
 
